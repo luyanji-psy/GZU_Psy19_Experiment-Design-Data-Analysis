@@ -1,0 +1,370 @@
+---
+title: "Demos_R basics"
+author: "Luyan Ji, GZU"
+date: "Sep, 22, 2021"
+output:
+  pdf_document:
+    latex_engine: xelatex  
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. CALCULATOR (USE IN CONSOLE)
+
+```{r Calculator, results='hide'}
+# Calculator 
+2+5
+7 - 8
+4 * 6
+144 / 12
+8 ^ 9
+2 + 2 * (2 ^ 6)
+10%%3   # modulus (divide x by y, and return the remainder)
+10%/%3  # integer division
+```
+
+## 2. CREATING AND WORKING WITH OBJECTS
+
+```{r objects}
+# Creating objects 
+a <- 11 * 7
+a 
+
+A <- 1 + 7 # Case sensitive
+A
+a
+
+# Overwrite objects 
+a <- 0
+a
+
+# Naming objects
+#1object <- 6    # invalid
+#!object <- 6    # invalid
+#-object <- 6    # invalid
+object1 <- 6
+#object! <- 6    # invalid
+#_object <- 6    # invalid
+my.object <- 6
+my_object <- 6
+myObject <- 6
+```
+
+#### **Notes.**    
+
+1. *Naming rules in R*
+
+    A syntactic name must consist of letters, digits, . and _ but can't begin with _ or digit. Additionally, you can't use any of the reserved words like TRUE, NULL, if. A name that does not follow these rules will give an error.
+
+
+2. *Naming conventions in R*
+
+    **Use common sense and BE CONSISTENT!!**
+    
+- allowercase: e.g., ```myobject```
+- period.separated: e.g., ```my.object```
+- underscore_separated: e.g., ```my_object```
+- lowerCamelCase: e.g., ```myObject```
+- UpperCamelCase: e.g., ```MyObject```
+
+
+```{r}
+# Removing objects 
+rm(A)
+```
+
+#### Quiz
+1. What are the outputs of a, b, and c?
+```{r}
+a <- 18
+b <- a
+c <- b
+b <- 6
+C <- 20
+```
+
+## 3. DATA TYPES
+
+```{r data_classes,results='hide'}
+# Data classes 
+as.integer(12)  # Integer
+12.6    # Numeric
+"Male"  # Character
+TRUE    # Logical
+```
+
+#### Quiz
+1. What are the classes of the following objects?
+```{r}
+a <- 3
+d <- "false"
+c <- F         # c <- f is invalid
+d <- 3.00
+e <- 1:3
+f <- 5L
+```
+
+#### **Tips.** ```class()``` will help you.
+
+## 4. DATA STRUCTURES
+
+### 4.1 Vectors
+
+```{r vectors, results='hide'}
+# Vector of numerical values
+c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+c(1:10)                                 
+seq(1, 10, by = 1)
+
+# Vector of characters
+Week = c("Mon", "Tue", "Wed", "Thur", "Fri")
+#c(Mon, Tue, Wed, Thur, Fri)           # Character strings must be in quotes
+Week = c(Week, "Sat", "Sun")           # Add elements
+
+# Vector of logical values
+c(FALSE, TRUE, TRUE, FALSE, FALSE)
+#c(false, true)                        # Logical must be in CAPITALS
+myVector <- c(F, F, F, T, T)          # BUT can be abbreviated. AVOID USING IT THOUGH.
+
+# Operations can be performed on vectors
+numbers <- c(1:10)
+numbers * 2               
+numbers + 0.1
+numbers + numbers
+
+# Subset vectors
+Week[1]
+Week[c(1, 3, 4)]
+Week[1:5]
+Week[-5]
+```
+
+### 4.2 Lists
+
+```{r list, results ='hide'}
+# Lists can contain any data types. 
+list(1, 2, 3, "hello", FALSE)    
+
+# Lists can contain lists and vectors.
+list(myVector, 1, 2, 3, "hello", FALSE) 
+list(myVector, c(1, 2, 3), "hello", FALSE)
+```
+
+### 4.3 Matrices
+
+```{r matrices}
+# Matrices
+m <-  matrix(1:6, nrow=2, ncol=2)       # Directly construct a matrix, columnwise by default
+m
+
+myNewVector <- 1:10
+dim(myNewVector) <- c(2,5)              # Transforms a vector into a matrix 
+myNewVector
+
+x <- 1:3
+y <- 10:12
+combine_by_columns <- cbind(x,y)                                  
+combine_by_rows <-  rbind(x,y)   
+
+combine_by_columns
+combine_by_rows
+```
+
+### 4.4 Data frames
+
+```{r data.frames, results='hide'}
+# Data frames
+id <- (1:200)
+group <- c(rep("Control", 100), rep("Drug", 100))
+response <- c(rnorm(100, mean = 25, sd = 5), rnorm(100, mean = 23, sd = 5))
+myData <- data.frame(Patient = id, Treatment = group, Response = response)
+head(myData) # Remind data will be different because of random seed
+head(myData, 12)
+tail(myData, 10)
+dim(myData)
+str(myData)
+summary(myData)
+
+# Subset data frames
+myData[1, 2] #[ROWS, COLUMNS]
+myData[1:20, 2:3]
+myData[1:20, ]
+myData[, 3]
+myData[, "Response"]
+myData$Response
+myData[myData$Response > 26, ]
+myData[myData$Treatment == "Control" & myData$Response <= 23, ]
+myData[myData$Treatment == "Control" | myData$Response >= 21, ]
+myData[myData$Treatment != "Control" | myData$Response > 24, ]
+age <- round(rnorm(200, mean = 40, sd = 10))
+myData$Age <- age
+head(myData)
+```
+
+## 5. FUNCTIONS
+
+```{r basic_functions, results='hide'}
+# Statistical functions
+myValues <- c(1:100)    # c() is also a function which concatenate items together
+mean(myValues)   # Some functions return single values (aggregate functions)
+median(myValues)
+min(myValues)
+max(myValues)
+sum(myValues)
+sd(myValues)
+
+log(myValues)    # Some return a value for each component of the vector
+log10(myValues)  
+sqrt(myValues)
+rnorm(100, mean = 5)  # ?rnorm, Help on how to use a function
+
+# Get the properties 
+class(myValues)
+typeof(myValues)
+length(myValues) 
+is.character(myValues)
+
+# Plotting functions
+hist(rnorm(100, mean = 5))
+plot(seq(1,100,1),rnorm(100, mean = 25, sd = 5))
+```
+
+#### Quiz
+1. The following are the test scores of 10 students:
+78 62 93 72 85 40 100 68 75 96
+1) save these scores in a variable named x;
+2) sort these scores;
+3) compute the mean, standard deviation, min, max, and median of these scores.
+
+2. Generate 200 random numbers which follows normal distribution with mean of 10 and sd of 2.
+
+3.  Generate a series of odd numbers from 1 to 100 and save it in a variable name oddNum.
+
+4. Read data file "myData.csv" and complete the following tasks:
+1) Compute the average age of the two treatment groups, respectively.
+2) Compute the number of the participants older than 40 in the control group and their responses (mean and sd).
+3) Select the  responses which are not below 15 in the two treatment groups, compute the average of them and plot the histogram of their responses in two groups separately.
+
+**Tips**. save the file in the same directory with your R script, and then read data. myData = read.csv("myData.csv")
+
+## 6. READING DATA INTO R
+
+### 6.1 Load preloaded sample datasets in R
+
+```{r load_datasets, results = 'hide'}
+data()    # display a list of the available datasets.
+
+data(mtcars)  # load a specific dataset
+```
+
+
+### 6.2 Read data
+
+```{r read_data, results='hide'}
+# Get the working directory
+getwd()  
+# Set the working directory
+setwd("G:/GZU/Teaching/Experiment design and data analyses/3&4 R, R Studio and some basics")    
+rawData <- read.csv("Data_Asian2 faces.csv", header = TRUE, sep=',') # Explain header (default is true)
+dim(rawData)
+head(rawData)
+str(rawData)
+summary(rawData)
+
+#install.packages("xlsx")    # uncomment it if you haven't installed the package
+library(xlsx)    # load the package
+rawData <- read.xlsx("Data_Asian2 faces.xlsx", sheetIndex = 1) 
+```
+
+## 7. LONG FORMAT AND WIDE FORMAT
+
+### 7.1 Wide format
+
+In the wide format, each row represents data from one entity while each column represents a variable. SPSS usually uses the wide format.
+
+
+```{r wide_format}
+# Create a new  variable
+rawData$age_diff = rawData$age_resp - rawData$Image_actual_age
+
+# Compute the mean of the DV for each participant and each condition
+# install.packages('reshape2')  # uncomments it if you haven't installed it
+library(reshape2)
+mean_wide_format = dcast(rawData, 	
+                  participant ~ Image_age + Image_emotion,	
+                  value.var = "age_diff", mean)	
+
+head(mean_wide_format)
+
+# Save data file
+write.csv(mean_wide_format,'mean_Asian2_wide.csv', row.names = FALSE)
+```
+
+### 7.2 Long format
+
+In the long format, scores on different variables are placed in a single column. 
+
+```{r long_format}
+# Compute the mean of the DV for each participant and each condition
+mean_long_format <- aggregate(rawData$age_diff, 
+                              by=list(Participant = rawData$participant, 
+                                      Image_age = rawData$Image_age, 
+                                      Image_emotion = rawData$Image_emotion)
+                              ,mean)
+
+# Rename the column name
+colnames(mean_long_format)[which(names(mean_long_format) == "x")] <- "Age difference"
+head(mean_long_format)
+
+# Save file
+write.csv(mean_long_format,'mean_Asian2_long.csv', row.names = FALSE)
+```
+
+### 7.3 Conversion between wide format and long format
+
+Using melt and dcast functions
+
+```{r wide_to_long}
+# Convert from wide format to long format
+## Read data
+data_wide <-  read.csv("mean_Asian2_wide.csv") 
+
+## Specify id.vars: the variables to keep
+library(reshape2)
+data_long <- melt(data_wide, id.vars = c('participant'),
+                  variable.name = "Condition",
+                  value.name = "Age difference")
+
+## Create new variables
+data_long$age <- with(data_long, ifelse(Condition == "old_angry", "old", 
+                                ifelse(Condition == "old_happy", "old", 
+                                ifelse(Condition == "old_neutral", "old", 
+                                "young"))))
+## with() function avoids mentioning data frame each time
+
+## subset 
+data_long$emotion <- NA
+  
+data_long[data_long$age == "old", ]$emotion <- 
+      substr(data_long[data_long$age == "old", ]$Condition,5,7)
+data_long[data_long$age == "young", ]$emotion <- 
+      substr(data_long[data_long$age == "young", ]$Condition,7,9)
+  
+# save data file
+write.csv(data_long,'data_long.csv', row.names = FALSE)
+```
+
+
+```{r long_to_wide}
+# Convert from long format to wide format
+## Read data
+data_long2 <-  read.csv("mean_Asian2_long.csv") 
+
+data_wide2 <- dcast(data_long2, Participant ~ Image_age + Image_emotion,                     
+                    value.var="Age.difference")
+
+```
