@@ -1,0 +1,167 @@
+---
+title: "Explore data using R"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Import data
+```{r read_data, results='hide', warning=FALSE}
+# Get the working directory
+getwd()  
+# Set the working directory
+setwd("F:/GZU/Teaching/Experiment design and data analyses/3&4 R, R Studio and some basics")    
+
+library(xlsx) 
+ratingData <- read.xlsx(
+            "130189443_2_What is your belief about the replicability of this study_35_35.xlsx", 
+            sheetIndex = 1) 
+
+```
+
+## A brief view of data
+```{r overview_data, results='hide'}
+head(ratingData)
+summary(ratingData)
+str(ratingData)
+mean(ratingData$X1..Ackerman..J..M...Nocera..C..C...amp..Bargh..J..A..Incidental.haptic.sensations.influence.social.judgments.and.decisions..Science.328..1712.1715..2010...)
+
+```
+
+## Your first plot
+
+```{r example_plot, warning=FALSE}
+#install.packages("Tmisc")
+library(Tmisc)
+data(quartet)
+View(quartet)
+
+library(ggplot2)
+# plot for the whole data
+ggplot(quartet, aes(x,y)) + geom_point() + geom_smooth(method=lm, se=FALSE)  
+
+# plot for the data grouped by set
+ggplot(quartet, aes(x,y)) + geom_point() + geom_smooth(method=lm, se=FALSE) + facet_wrap(vars(set))   
+```
+
+## Organize data using base R
+
+```{r arrange_columns, results='hide'}
+# Select columns by index
+ratingData_select_column = ratingData[,c(1,7:27)]
+
+# Rename column names
+#colnames(ratingData_select_column) <- c("Participant","Ackerman","Aviezer","Balafoutas","Derex","Duncan","Gervais","Gneezy","Hauser","Janssen","Karpicke","Kidd","Kovac#s","Lee","Morewedge","Nishi","Pyc","Ramirez","Rand","Shah","Sparrow","Wilson")
+
+# Another more efficient way to rename column names
+names(ratingData_select_column) <- substring(names(ratingData_select_column),5,13)
+
+# Compute the mean of each selected column
+ratingScores = colMeans(ratingData_select_column[,c(2:22)]) 
+
+# Compute the mean of each selected row
+response_bias = rowMeans(ratingData_select_column[,c(2:22)]) 
+
+# Convert to a data frame. ggplot must use a data frame.
+ratingScores = data.frame(ratingScores)
+response_bias = data.frame(response_bias)
+
+# check whether data is a data frame
+is.data.frame(ratingScores)
+
+# Create a data frame
+replication_type = data.frame(c("not_replicated", rep("replicated",4), 
+                                "not_replicated",rep("replicated",4),
+                                "not_replicated","replicated","not_replicated",
+                                rep("replicated",3), rep("not_replicated",4),
+                                "replicated"))
+
+# Combine data frames column wise
+rating_replication = cbind(ratingScores,replication_type)
+names(rating_replication) = c("Ratings","Replication_type")
+
+```
+
+
+## Organize data using tidyverse
+
+```{r arrange_columns2, results='hide', warning=FALSE}
+library(tidyverse)
+rating_replication <- ratingData %>% 
+  summarise(across(7:27, mean)) %>%   # compute the column means
+  gather(key=Papers, value=Ratings) %>%  # convert from wide to long format
+  mutate(Papers = str_sub(Papers,5,13)) %>%   # extract substrings, could be improved
+  add_column(Replication_type = pull(replication_type,1)) # add column
+``` 
+
+
+## Plot
+```{r plot_hist, warning=FALSE}
+### ggplot2
+library(ggplot2)
+# Histogram
+ggplot(rating_replication,aes(Ratings)) + 
+      geom_histogram(bins=6, fill="steelblue1", color="white") +
+      ggtitle("How much you believe that the study could be replicated?") +
+      xlab("Belief ratings") +
+      theme(plot.title = element_text(hjust = 0.5, face="bold"),
+            axis.title = element_text(face="bold")) 
+
+# Scatter plot
+ggplot(rating_replication, 
+      aes(x=Ratings, y=reorder(Papers,Ratings), 
+      shape=Replication_type, color=Replication_type)) + 
+      geom_point(size=4) +
+      geom_vline(xintercept = 3.5, linetype="dotted") +
+      theme(axis.title.y=element_blank())
+      
+
+# Bar plot
+summary_ratings <- rating_replication %>% 
+  group_by(Replication_type) %>% 
+  summarise(
+    n=n(),
+    mean=mean(Ratings),
+    sd=sd(Ratings)
+  ) %>% 
+  mutate(se=sd/sqrt(n)) %>% 
+  mutate(ic=se * 1.96)  # 95% IC
+
+
+ggplot(summary_ratings) +
+  geom_bar(aes(x=Replication_type, y=mean), stat="identity", 
+           width=0.4, fill=c("lightgrey", "darkgrey")) +
+  geom_errorbar(aes(x=Replication_type, ymin=mean-se, ymax=mean+se), width=0.1, alpha=0.9) +
+  ggtitle("How much you believe that the study could be replicated?") +
+  xlab("Replication type") +
+  ylab("Belief ratings") +
+  ylim(0,5) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5, face="bold"),
+        axis.title = element_text(face="bold")) 
+
+
+```
+
+
+
+## Clean data
+
+
+how about NA
+
+RT below and above 2.5 SD
+
+
+
+Quiz.
+Create number_canceled column to represent the total number of canceled bookings. What value was returned in this column?
+
+
+
